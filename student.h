@@ -2,6 +2,9 @@
 #define STUDENT_H
 
 #include <QDialog>
+#include <QSqlDatabase>
+#include <QSqlError>
+#include <QSqlTableModel>
 
 namespace Ui
 {
@@ -16,21 +19,25 @@ public:
   explicit Student(QWidget* parent = nullptr);
   void summarise();
   void countDays();
+  void countDays(Qt::DayOfWeek dayOfWeek);
+  void onDayCheckBoxClicked(bool checked);
   Ui::Student* ui;
-  int days{};
+  QSqlTableModel* model;
+  QSqlDatabase db;
   ~Student();
 
 private slots:
 
-  void slotCalendar();
-  void slotCalendar2();
-  void slotCalendar3();
-  void slotCalendar4();
-  void slotCalendar5();
-  void slotCalendar6();
-  void slotCalendar7();
+  void on_pushButton_add_clicked();
+
+  void on_tableView_clicked(const QModelIndex& index);
+
+  void on_pushButton_delete_clicked();
 
 private:
+  int days{};
+  short currRow{};
+  std::array< int, 7 > daysOfWeekCount;
 };
 
 #endif

@@ -1,5 +1,6 @@
 #include "student.h"
 #include <QDate>
+#include <QDebug>
 #include "ui_student.h"
 
 Student::Student(QWidget* parent):
@@ -7,199 +8,122 @@ Student::Student(QWidget* parent):
   ui(new Ui::Student)
 {
   ui->setupUi(this);
+  db = QSqlDatabase::addDatabase("QSQLITE");
+  db.setDatabaseName("data.db");
+  daysOfWeekCount = { 0, 0, 0, 0, 0, 0, 0 };
+  if (db.open())
+  {
+    model = new QSqlTableModel(this, db);
+    model->setTable("Students");
+    model->setEditStrategy(QSqlTableModel::OnFieldChange);
+    model->select();
+    ui->tableView->setModel(model);
+    ui->tableView->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
+  }
+  else
+  {
+    qDebug() << "Ошибка: " + db.lastError().databaseText();
+  }
   ui->calendarWidget->setSelectedDate(QDate::currentDate());
-  connect(ui->checkBox_Monday, &QCheckBox::clicked, this, &Student::slotCalendar);
-  connect(ui->checkBox_Tuesday, &QCheckBox::clicked, this, &Student::slotCalendar2);
-  connect(ui->checkBox_Wednesday, &QCheckBox::clicked, this, &Student::slotCalendar3);
-  connect(ui->checkBox_Thursday, &QCheckBox::clicked, this, &Student::slotCalendar4);
-  connect(ui->checkBox_Friday, &QCheckBox::clicked, this, &Student::slotCalendar5);
-  connect(ui->checkBox_Saturday, &QCheckBox::clicked, this, &Student::slotCalendar6);
-  connect(ui->checkBox_Sunday, &QCheckBox::clicked, this, &Student::slotCalendar7);
+
+  connect(ui->checkBox_Monday, &QCheckBox::clicked, this, &Student::onDayCheckBoxClicked);
+  connect(ui->checkBox_Tuesday, &QCheckBox::clicked, this, &Student::onDayCheckBoxClicked);
+  connect(ui->checkBox_Wednesday, &QCheckBox::clicked, this, &Student::onDayCheckBoxClicked);
+  connect(ui->checkBox_Thursday, &QCheckBox::clicked, this, &Student::onDayCheckBoxClicked);
+  connect(ui->checkBox_Friday, &QCheckBox::clicked, this, &Student::onDayCheckBoxClicked);
+  connect(ui->checkBox_Saturday, &QCheckBox::clicked, this, &Student::onDayCheckBoxClicked);
+  connect(ui->checkBox_Sunday, &QCheckBox::clicked, this, &Student::onDayCheckBoxClicked);
+
+  connect(ui->lineEdit_sumInput, &QLineEdit::editingFinished, this, &Student::summarise);
 }
 
 void Student::summarise()
 {
   QString sum = ui->lineEdit_sumInput->text();
   size_t tmp = sum.toULongLong() * days;
-  ui->label_finalSum->setText(QString(QString::number(tmp)));
+  ui->label_finalSum->setText(QString::number(tmp));
 }
 
 Student::~Student()
 {
+  db.close();
   delete ui;
 }
 
-void Student::slotCalendar()
+void Student::onDayCheckBoxClicked(bool checked)
 {
-  QDate currentDate = ui->calendarWidget->selectedDate();
-  static int tmp{};
-  if (ui->checkBox_Monday->isChecked())
+  QCheckBox* checkBox = qobject_cast< QCheckBox* >(sender());
+  Qt::DayOfWeek dayOfWeek = Qt::DayOfWeek(-1);
+  if (checkBox == ui->checkBox_Monday)
   {
-    for (int day = 1; day <= currentDate.daysInMonth(); day++)
-    {
-      QDate date = QDate(currentDate.year(), currentDate.month(), day);
-      if (date.dayOfWeek() == Qt::Monday)
-      {
-        tmp++;
-      }
-    }
-    days += tmp;
+    dayOfWeek = Qt::Monday;
   }
-  else if (!ui->checkBox_Monday->isChecked())
+  else if (checkBox == ui->checkBox_Tuesday)
   {
-    days -= tmp;
-    tmp -= tmp;
+    dayOfWeek = Qt::Tuesday;
   }
+  else if (checkBox == ui->checkBox_Wednesday)
+  {
+    dayOfWeek = Qt::Wednesday;
+  }
+  else if (checkBox == ui->checkBox_Thursday)
+  {
+    dayOfWeek = Qt::Thursday;
+  }
+  else if (checkBox == ui->checkBox_Friday)
+  {
+    dayOfWeek = Qt::Friday;
+  }
+  else if (checkBox == ui->checkBox_Saturday)
+  {
+    dayOfWeek = Qt::Saturday;
+  }
+  else if (checkBox == ui->checkBox_Sunday)
+  {
+    dayOfWeek = Qt::Sunday;
+  }
+  if (checked)
+  {
+    countDays(dayOfWeek);
+  }
+  else
+  {
+    days -= daysOfWeekCount[dayOfWeek];
+    daysOfWeekCount[dayOfWeek] = 0;
+  }
+
   ui->label_counterDays->setText("Количество занятий в месяце: " + QString::number(days));
   ui->label_finalSum->setText(QString::number(ui->lineEdit_sumInput->text().toULongLong() * days));
 }
 
-void Student::slotCalendar2()
+void Student::countDays(Qt::DayOfWeek dayOfWeek)
 {
   QDate currentDate = ui->calendarWidget->selectedDate();
-  static int tmp2{};
-  if (ui->checkBox_Tuesday->isChecked())
+  int tmp = 0;
+  for (int day = 1; day <= currentDate.daysInMonth(); day++)
   {
-    for (int day = 1; day <= currentDate.daysInMonth(); day++)
+    QDate date = QDate(currentDate.year(), currentDate.month(), day);
+    if (date.dayOfWeek() == dayOfWeek)
     {
-      QDate date = QDate(currentDate.year(), currentDate.month(), day);
-      if (date.dayOfWeek() == Qt::Tuesday)
-      {
-        tmp2++;
-      }
+      tmp++;
     }
-    days += tmp2;
   }
-  else if (!ui->checkBox_Tuesday->isChecked())
-  {
-    days -= tmp2;
-    tmp2 -= tmp2;
-  }
-  ui->label_counterDays->setText("Количество занятий в месяце: " + QString::number(days));
-  ui->label_finalSum->setText(QString::number(ui->lineEdit_sumInput->text().toULongLong() * days));
+  days += tmp;
+  daysOfWeekCount[dayOfWeek] = tmp;
 }
 
-void Student::slotCalendar3()
+void Student::on_pushButton_add_clicked()
 {
-  QDate currentDate = ui->calendarWidget->selectedDate();
-  static int tmp2{};
-  if (ui->checkBox_Wednesday->isChecked())
-  {
-    for (int day = 1; day <= currentDate.daysInMonth(); day++)
-    {
-      QDate date = QDate(currentDate.year(), currentDate.month(), day);
-      if (date.dayOfWeek() == Qt::Wednesday)
-      {
-        tmp2++;
-      }
-    }
-    days += tmp2;
-  }
-  else if (!ui->checkBox_Wednesday->isChecked())
-  {
-    days -= tmp2;
-    tmp2 -= tmp2;
-  }
-  ui->label_counterDays->setText("Количество занятий в месяце: " + QString::number(days));
-  ui->label_finalSum->setText(QString::number(ui->lineEdit_sumInput->text().toULongLong() * days));
+  model->submitAll();
 }
 
-void Student::slotCalendar4()
+void Student::on_tableView_clicked(const QModelIndex& index)
 {
-  QDate currentDate = ui->calendarWidget->selectedDate();
-  static int tmp2{};
-  if (ui->checkBox_Thursday->isChecked())
-  {
-    for (int day = 1; day <= currentDate.daysInMonth(); day++)
-    {
-      QDate date = QDate(currentDate.year(), currentDate.month(), day);
-      if (date.dayOfWeek() == Qt::Thursday)
-      {
-        tmp2++;
-      }
-    }
-    days += tmp2;
-  }
-  else if (!ui->checkBox_Thursday->isChecked())
-  {
-    days -= tmp2;
-    tmp2 -= tmp2;
-  }
-  ui->label_counterDays->setText("Количество занятий в месяце: " + QString::number(days));
-  ui->label_finalSum->setText(QString::number(ui->lineEdit_sumInput->text().toULongLong() * days));
+  currRow = index.row();
 }
 
-void Student::slotCalendar5()
+void Student::on_pushButton_delete_clicked()
 {
-  QDate currentDate = ui->calendarWidget->selectedDate();
-  static int tmp2{};
-  if (ui->checkBox_Friday->isChecked())
-  {
-    for (int day = 1; day <= currentDate.daysInMonth(); day++)
-    {
-      QDate date = QDate(currentDate.year(), currentDate.month(), day);
-      if (date.dayOfWeek() == Qt::Friday)
-      {
-        tmp2++;
-      }
-    }
-    days += tmp2;
-  }
-  else if (!ui->checkBox_Friday->isChecked())
-  {
-    days -= tmp2;
-    tmp2 -= tmp2;
-  }
-  ui->label_counterDays->setText("Количество занятий в месяце: " + QString::number(days));
-  ui->label_finalSum->setText(QString::number(ui->lineEdit_sumInput->text().toULongLong() * days));
-}
-
-void Student::slotCalendar6()
-{
-  QDate currentDate = ui->calendarWidget->selectedDate();
-  static int tmp2{};
-  if (ui->checkBox_Saturday->isChecked())
-  {
-    for (int day = 1; day <= currentDate.daysInMonth(); day++)
-    {
-      QDate date = QDate(currentDate.year(), currentDate.month(), day);
-      if (date.dayOfWeek() == Qt::Saturday)
-      {
-        tmp2++;
-      }
-    }
-    days += tmp2;
-  }
-  else if (!ui->checkBox_Saturday->isChecked())
-  {
-    days -= tmp2;
-    tmp2 -= tmp2;
-  }
-  ui->label_counterDays->setText("Количество занятий в месяце: " + QString::number(days));
-  ui->label_finalSum->setText(QString::number(ui->lineEdit_sumInput->text().toULongLong() * days));
-}
-
-void Student::slotCalendar7()
-{
-  QDate currentDate = ui->calendarWidget->selectedDate();
-  static int tmp2{};
-  if (ui->checkBox_Sunday->isChecked())
-  {
-    for (int day = 1; day <= currentDate.daysInMonth(); day++)
-    {
-      QDate date = QDate(currentDate.year(), currentDate.month(), day);
-      if (date.dayOfWeek() == Qt::Sunday)
-      {
-        tmp2++;
-      }
-    }
-    days += tmp2;
-  }
-  else if (!ui->checkBox_Sunday->isChecked())
-  {
-    days -= tmp2;
-    tmp2 -= tmp2;
-  }
-  ui->label_counterDays->setText("Количество занятий в месяце: " + QString::number(days));
-  ui->label_finalSum->setText(QString::number(ui->lineEdit_sumInput->text().toULongLong() * days));
+  model->removeRow(currRow);
+  model->select();
 }

@@ -41,6 +41,7 @@ void MainWindow::on_pushButton_inputUser_clicked()
 {
   users_.insert(ui->lineEdit_inputUser->text());
   ui->lineEdit_inputUser->setText("");
+  secUi->model->insertRow(secUi->model->rowCount());
 }
 
 void MainWindow::on_pushButton_checkUser_clicked()
