@@ -1,6 +1,7 @@
 #include "student.h"
 #include <QDate>
 #include <QDebug>
+#include <QSqlQuery>
 #include "ui_student.h"
 
 Student::Student(QWidget* parent):
@@ -18,6 +19,7 @@ Student::Student(QWidget* parent):
     model->setEditStrategy(QSqlTableModel::OnFieldChange);
     model->select();
     ui->tableView->setModel(model);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableView->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
   }
   else
@@ -39,13 +41,30 @@ Student::Student(QWidget* parent):
 
 void Student::summarise()
 {
+  QString studentName = ui->label_Name->text();
   QString sum = ui->lineEdit_sumInput->text();
-  size_t tmp = sum.toULongLong() * days;
-  ui->label_finalSum->setText(QString::number(tmp));
+  size_t totalSum = sum.toULongLong() * days;
+  QSqlQuery query;
+  query.prepare("UPDATE Students SET LessonsCount = :count, Price = :price, TotalSum = :total WHERE Name = :name");
+  query.bindValue(":count", days);
+  query.bindValue(":price", sum.toULongLong());
+  query.bindValue(":total", totalSum);
+  query.bindValue(":name", studentName);
+
+  if (!query.exec())
+  {
+    qDebug() << "Ошибка обновления данных в базе: " + query.lastError().text();
+  }
+  ui->label_finalSum->setText(QString::number(totalSum));
 }
 
 Student::~Student()
 {
+  QList< QCheckBox* > checkboxes = this->findChildren< QCheckBox* >();
+  for (QCheckBox* checkbox : checkboxes)
+  {
+    checkbox->setChecked(false);
+  }
   db.close();
   delete ui;
 }

@@ -23,6 +23,7 @@ public:
   void onDayCheckBoxClicked(bool checked);
   Ui::Student* ui;
   QSqlTableModel* model;
+  int days{};
   QSqlDatabase db;
   ~Student();
 
@@ -35,7 +36,6 @@ private slots:
   void on_pushButton_delete_clicked();
 
 private:
-  int days{};
   short currRow{};
   std::array< int, 7 > daysOfWeekCount;
 };
