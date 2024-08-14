@@ -9,8 +9,12 @@ Student::Student(QWidget* parent):
   ui(new Ui::Student)
 {
   ui->setupUi(this);
-  db = QSqlDatabase::addDatabase("QSQLITE");
-  db.setDatabaseName("data.db");
+  db = QSqlDatabase::addDatabase("QPSQL");
+  db.setHostName("localhost");
+  db.setDatabaseName("postgres");
+  db.setUserName("postgres");
+  db.setPassword("danil2005novo");
+  db.setPort(5432);
   daysOfWeekCount = { 0, 0, 0, 0, 0, 0, 0 };
   if (db.open())
   {
@@ -24,7 +28,7 @@ Student::Student(QWidget* parent):
   }
   else
   {
-    qDebug() << "Ошибка: " + db.lastError().databaseText();
+    qDebug() << "Ошибка: " + db.lastError().text();
   }
   ui->calendarWidget->setSelectedDate(QDate::currentDate());
 

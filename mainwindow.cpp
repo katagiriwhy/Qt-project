@@ -35,6 +35,7 @@ void MainWindow::writeData()
 MainWindow::~MainWindow()
 {
   // writeData();
+  delete secUi;
   delete ui;
 }
 
@@ -70,7 +71,7 @@ void MainWindow::on_pushButton_checkUser_clicked()
     {
       secUi->show();
       secUi->ui->label_Name->setText(studentName);
-      secUi->ui->lineEdit_sumInput->setText(query.value("PricePerLesson").toString());
+      secUi->ui->lineEdit_sumInput->setText(query.value("Price").toString());
       secUi->days = query.value("LessonsCount").toInt();
       secUi->ui->label_counterDays->setText("Количество занятий в месяце: " + QString::number(secUi->days));
       secUi->ui->label_finalSum->setText(query.value("TotalSum").toString());
