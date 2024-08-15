@@ -44,7 +44,7 @@ void MainWindow::on_pushButton_inputUser_clicked()
   QString studentName = ui->lineEdit_inputUser->text();
   users_.insert(studentName);
   QSqlQuery query;
-  query.prepare("INSERT INTO Students (Name) VALUES (:name)");
+  query.prepare("INSERT INTO students (name) VALUES (:name)");
   query.bindValue(":name", studentName);
   if (!query.exec())
   {
@@ -62,19 +62,21 @@ void MainWindow::on_pushButton_checkUser_clicked()
 {
   QString studentName = ui->lineEdit_checkUser->text();
   QSqlQuery query;
-  query.prepare("SELECT * FROM Students WHERE Name = :name");
+  query.prepare("SELECT * FROM students WHERE name = :name");
   query.bindValue(":name", studentName);
-  secUi->model->setFilter("Name = '" + studentName + "'");
+  secUi->model->setFilter("name = '" + studentName + "'");
   if (query.exec())
   {
     if (query.next())
     {
       secUi->show();
       secUi->ui->label_Name->setText(studentName);
-      secUi->ui->lineEdit_sumInput->setText(query.value("Price").toString());
-      secUi->days = query.value("LessonsCount").toInt();
+      secUi->ui->lineEdit_sumInput->setText(query.value("price").toString());
+      secUi->days = query.value("lessons").toInt();
       secUi->ui->label_counterDays->setText("Количество занятий в месяце: " + QString::number(secUi->days));
-      secUi->ui->label_finalSum->setText(query.value("TotalSum").toString());
+      secUi->ui->label_finalSum->setText(query.value("sum").toString());
+      secUi->ui->comment_zone->setPlainText(query.value("comments").toString());
+      secUi->ui->paidCheck->setChecked(query.value("paid").toBool());
     }
     else
     {
@@ -120,4 +122,20 @@ void MainWindow::on_pushButton_readFile_clicked()
   //   users_.insert(in.readLine());
   // }
   // file.close();
+}
+
+void MainWindow::on_pushButton_delUser_clicked()
+{
+  QSqlQuery query(secUi->db);
+  QString student = ui->lineEdit_delUser->text();
+  query.prepare("DELETE FROM students WHERE name = :name");
+  query.bindValue(":name", student);
+  if (query.exec())
+  {
+    QMessageBox::information(this, "Удаление пользователя", "Ученик: " + student + " был удален!");
+  }
+  else
+  {
+    QMessageBox::critical(this, "Ошибка", "Ошибка удаления " + query.lastError().text());
+  }
 }

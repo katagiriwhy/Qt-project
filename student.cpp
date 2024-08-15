@@ -48,12 +48,17 @@ void Student::summarise()
   QString studentName = ui->label_Name->text();
   QString sum = ui->lineEdit_sumInput->text();
   size_t totalSum = sum.toULongLong() * days;
+  QString comment = ui->comment_zone->toPlainText();
+  bool paid = ui->paidCheck->isChecked();
   QSqlQuery query;
-  query.prepare("UPDATE Students SET LessonsCount = :count, Price = :price, TotalSum = :total WHERE Name = :name");
+  query.prepare("UPDATE Students SET lessons = :count, price = :price, sum = :total, comments = :comment, paid = "
+                ":paidCheck WHERE name = :name");
   query.bindValue(":count", days);
   query.bindValue(":price", sum.toULongLong());
   query.bindValue(":total", totalSum);
   query.bindValue(":name", studentName);
+  query.bindValue(":comment", comment);
+  query.bindValue(":paidCheck", paid);
 
   if (!query.exec())
   {
@@ -137,6 +142,7 @@ void Student::countDays(Qt::DayOfWeek dayOfWeek)
 
 void Student::on_pushButton_add_clicked()
 {
+  summarise();
   model->submitAll();
 }
 

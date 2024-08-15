@@ -30,6 +30,8 @@ private slots:
 
   void on_pushButton_readFile_clicked();
 
+  void on_pushButton_delUser_clicked();
+
 private:
   Ui::MainWindow* ui;
   Student* secUi;

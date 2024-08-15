@@ -37,6 +37,10 @@ public:
     QLineEdit *lineEdit_checkUser;
     QPushButton *pushButton_checkUser;
     QPushButton *pushButton_readFile;
+    QWidget *widget;
+    QVBoxLayout *verticalLayout_3;
+    QLineEdit *lineEdit_delUser;
+    QPushButton *pushButton_delUser;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -101,6 +105,25 @@ public:
         pushButton_readFile = new QPushButton(centralwidget);
         pushButton_readFile->setObjectName("pushButton_readFile");
         pushButton_readFile->setGeometry(QRect(320, 100, 151, 61));
+        widget = new QWidget(centralwidget);
+        widget->setObjectName("widget");
+        widget->setGeometry(QRect(300, 430, 221, 61));
+        verticalLayout_3 = new QVBoxLayout(widget);
+        verticalLayout_3->setObjectName("verticalLayout_3");
+        verticalLayout_3->setContentsMargins(0, 0, 0, 0);
+        lineEdit_delUser = new QLineEdit(widget);
+        lineEdit_delUser->setObjectName("lineEdit_delUser");
+
+        verticalLayout_3->addWidget(lineEdit_delUser);
+
+        pushButton_delUser = new QPushButton(widget);
+        pushButton_delUser->setObjectName("pushButton_delUser");
+        QFont font3;
+        font3.setBold(true);
+        pushButton_delUser->setFont(font3);
+
+        verticalLayout_3->addWidget(pushButton_delUser);
+
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName("menubar");
@@ -123,6 +146,7 @@ public:
         pushButton_inputUser->setText(QCoreApplication::translate("MainWindow", "\320\224\320\276\320\261\320\260\320\262\320\270\321\202\321\214", nullptr));
         pushButton_checkUser->setText(QCoreApplication::translate("MainWindow", "\320\235\320\260\320\271\321\202\320\270", nullptr));
         pushButton_readFile->setText(QCoreApplication::translate("MainWindow", "Read The File", nullptr));
+        pushButton_delUser->setText(QCoreApplication::translate("MainWindow", "\320\243\320\264\320\260\320\273\320\270\321\202\321\214", nullptr));
     } // retranslateUi
 
 };
